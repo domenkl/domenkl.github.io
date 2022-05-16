@@ -235,7 +235,6 @@
                 .then(device => {
                     log('Povezovanje do naprave...');
                     bluetoothDevice = device;
-                    bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
                     return device.gatt.connect();
                 })
                 .then(server => {
@@ -299,14 +298,6 @@
                     'Please make sure the "Experimental Web Platform features" flag is enabled.');
                 return false;
             }
-        }
-
-        function onDisconnected() {
-            log('> Bluetooth naprava je odstranjena');
-            connectDeviceAndCacheCharacteristics()
-            .catch(error => {
-                log('Napaka! ' + error);
-            });
         }
         
         var showOutput = true;
