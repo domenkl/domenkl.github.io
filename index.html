@@ -229,8 +229,8 @@
             if (!connected) {
                 log('Iskanje bluetooth naprave...');
                 navigator.bluetooth.requestDevice(
-                    {/*filters: [{services: ['9308c608-3189-47ad-abaa-f32e0b4fadc2']}],*/
-                    acceptAllDevices: true,
+                    {filters: [{services: ['9308c608-3189-47ad-abaa-f32e0b4fadc2']}],
+                    acceptAllDevices: false,
                     optionalServices: ['9308c608-3189-47ad-abaa-f32e0b4fadc2']})
                 .then(device => {
                     log('Povezovanje do naprave...');
@@ -252,7 +252,7 @@
                     log('Branje vrednosti pralnega stroja...');
                 })
                 .then(_ => {
-                    log('> Prebrana vrednost ' + batteryLevelCharacteristic.readValue());
+                    //log('> Prebrana vrednost ' + batteryLevelCharacteristic.readValue());
                     batteryLevelCharacteristic.startNotifications();
                     connected = true;
                     document.querySelector("button#find-devices").textContent = "ODSTRANI NAPRAVO";
@@ -274,7 +274,7 @@
                         onPralnicaValueChanged);
                     batteryLevelCharacteristic = null;
                 }
-                // Note that it doesn't disconnect device.
+                bluetoothDevice.gatt.disconnect();
                 bluetoothDevice = null;
                 connected = false;
                 log('> Bluetooth naprava je resetirana.');
