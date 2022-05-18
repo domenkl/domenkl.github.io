@@ -65,6 +65,7 @@
                     </div>
 
                   </div>
+                <div id="loader"></div>
                 <h5 id="washing-type">Ni povezave</h5>
             </div>
             <div id="logger" class="logging flex-column d-flex justify-content-center align-items-center">  
@@ -180,6 +181,27 @@
             width: 100%;
           }
         }
+        #loader {
+          display: none;
+          margin-top: 20px;
+          border: 5px solid #ffffff;
+          border-radius: 50%;
+          border-top: 5px solid #04ff20;
+          border-right: 5px solid #04ff20;
+          width: 50px;
+          height: 50px;
+          -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
     </style>
     <script type="text/javascript">
         Notification.requestPermission( function(status) {
@@ -206,20 +228,11 @@
             "117": "undefined",
             "119": "wash"
         }
-        let prevWash = ""; 
-        /*interval = setInterval(changeStates, 5000);
-        function changeStates() {
-            const vals = Object.keys(washingStates);
-            const size = vals.length;
-            const rand = Math.floor(Math.random() * size);
-            setWashingState(vals[rand]);
-        }*/
+        let prevWash = "None"; 
         function setWashingState(pos) {
             const state = washingStates[pos];
-            washingType = document.getElementById("washing-type");
-            washingType.textContent = state;
-            washingType.style.color = "#00e93f";
-            if (prevWash !== "") {
+            setWashingText(state, "#00e93f");
+            if (prevWash !== "None") {
                 document.querySelector(".circle_out").classList.remove(prevWash);
                 document.querySelector(".circle_out").classList.add(state);
                 displayNotification(state)
@@ -259,6 +272,8 @@
         // 115 - spin, 105 - idle, 117 - undefined, 119 - wash
         function onPralnicaValueChanged(event) {
             const value = event.target.value.getUint8(0);
+            // Ignore undefined
+            if (value === 117) return;
             if (lastValue !== undefined) {
                 if (lastValue !== value) {
                     lastValue = value;
@@ -280,6 +295,8 @@
                     acceptAllDevices: false,
                     optionalServices: ['9308c608-3189-47ad-abaa-f32e0b4fadc2']})
                 .then(device => {
+                    document.getElementById("loader").style.display = "block";
+                    document.getElementById("washing-type").style.display = "none";
                     log('Povezovanje do naprave...');
                     bluetoothDevice = device;
                     return device.gatt.connect();
@@ -298,14 +315,20 @@
                     log('Branje vrednosti pralnega stroja...');
                 })
                 .then(_ => {
-                    //log('> Prebrana vrednost ' + batteryLevelCharacteristic.readValue());
+                  batteryLevelCharacteristic.readValue().then(value => {
+                      document.getElementById("loader").style.display = "none";
+                      const val = value.getUint8();
+                      log('> Prebrana vrednost: ' + val + " : " + washingStates[val].toUpperCase());
+                      lastValue = val;
+                      setWashingState(val);
+                    });
                     batteryLevelCharacteristic.startNotifications();
                     connected = true;
                     document.querySelector("button#find-devices").textContent = "ODSTRANI NAPRAVO";
                 })
                 .catch(error => {
                     log('Napaka! ' + error);
-                    setNotConnected();
+                    setWashingText("Ni povezave", "red");
                 });
             }
             else {
@@ -317,7 +340,7 @@
                 bluetoothDevice.gatt.disconnect();
                 bluetoothDevice = null;
                 connected = false;
-                setNotConnected()
+                setWashingText("Ni povezave", "red");
                 log('> Bluetooth naprava je resetirana.');
                 document.querySelector("button#find-devices").textContent = "IŠČI NAPRAVO";
             }
@@ -355,10 +378,11 @@
             showOutput = !showOutput;
         }
 
-        function setNotConnected() {
+        function setWashingText(text, color) {
           washingType = document.getElementById("washing-type");
-          washingType.textContent = "Ni povezave";
-          washingType.style.color = "red";
+          washingType.textContent = text;
+          washingType.style.color = color;
+          washingType.style.display = "block";
         }
         
     </script>
