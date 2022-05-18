@@ -3,14 +3,14 @@
 	<head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
 		<title>
-            Pralnica
+            Pametna pralnica
         </title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
 	</head>
     <body>
         <div class="main container d-flex flex-column justify-content-center">
             <div class="header d-flex justify-content-center align-items-center">
-                <h2>Bluetooth bralnik naprave</h2>
+                <h2>Pametna pralnica</h2>
             </div>
             <div class="middle d-flex justify-content-center align-items-center">
                 <button id="find-devices" onclick="onButtonClick()">IŠČI NAPRAVO</button>
@@ -65,7 +65,7 @@
                     </div>
 
                   </div>
-                <h5 id="washing-type"></h5>
+                <h5 id="washing-type">Ni povezave</h5>
             </div>
             <div id="logger" class="logging flex-column d-flex justify-content-center align-items-center">  
                 <div class="output-header align-items-center d-flex justify-content-center flex-row">
@@ -131,16 +131,23 @@
             text-transform: uppercase;
         }
         #log {
-            max-height: 1000px;
+            /*max-height: 1000px;
             transition: .5s linear all;
             background: #f3f3f3;
             width: 100%;
             opacity: 1;
-            transform: scaleY(1.0);
+            transform: scaleY(1.0);*/
+            background: #f3f3f3;
+            width: 100%;
+            height: auto;
+            opacity: 1;
+            transition: height 0ms 0ms, opacity 600ms 0ms;
         }
         #log.hide {
-            opacity: 0;
-            transform: scaleY(0);
+          overflow: hidden;
+          height: 0;
+          opacity: 0;
+          transition: height 0ms 400ms, opacity 400ms 0ms;
         }
         #output {
             margin-top: 30px;
@@ -157,11 +164,15 @@
             margin-top: 20px;
         }
         pre {
-            white-space: pre-wrap;       /* Since CSS 2.1 */
-            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-            white-space: -pre-wrap;      /* Opera 4-6 */
-            white-space: -o-pre-wrap;    /* Opera 7 */
-            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            white-space: pre-wrap;
+            white-space: -moz-pre-wrap;  
+            white-space: -pre-wrap;      
+            white-space: -o-pre-wrap;   
+            word-wrap: break-word;       
+        }
+
+        #washing-type {
+          color: red;
         }
 
         @media only screen and (max-width: 648px) {
@@ -196,16 +207,18 @@
             "119": "wash"
         }
         let prevWash = ""; 
-        interval = setInterval(changeStates, 5000);
+        /*interval = setInterval(changeStates, 5000);
         function changeStates() {
             const vals = Object.keys(washingStates);
             const size = vals.length;
             const rand = Math.floor(Math.random() * size);
             setWashingState(vals[rand]);
-        }
+        }*/
         function setWashingState(pos) {
             const state = washingStates[pos];
-            document.querySelector("#washing-type").textContent = state;
+            washingType = document.getElementById("washing-type");
+            washingType.textContent = state;
+            washingType.style.color = "#00e93f";
             if (prevWash !== "") {
                 document.querySelector(".circle_out").classList.remove(prevWash);
                 document.querySelector(".circle_out").classList.add(state);
@@ -249,12 +262,14 @@
             if (lastValue !== undefined) {
                 if (lastValue !== value) {
                     lastValue = value;
-                    log('> Prebrana vrednost ' + value);
+                    log('> Prebrana vrednost ' + value + ' : ' + washingStates[value].toUpperCase());
+                    setWashingState(value)
                 }
             }
             else {
                 lastValue = value;
-            } 
+                setWashingState(lastValue)
+            }
         }
 
         function onButtonClick() {
@@ -290,14 +305,8 @@
                 })
                 .catch(error => {
                     log('Napaka! ' + error);
-                })
-                /*.then(value => {
-                    var batteryLevel = value.getUint8(0);
-                    log('> Prebrana vrednost ' + batteryLevel + '.');
-                })
-                .catch(error => {
-                    log('Napaka! ' + error);
-                })*/;
+                    setNotConnected();
+                });
             }
             else {
                 if (batteryLevelCharacteristic) {
@@ -308,6 +317,7 @@
                 bluetoothDevice.gatt.disconnect();
                 bluetoothDevice = null;
                 connected = false;
+                setNotConnected()
                 log('> Bluetooth naprava je resetirana.');
                 document.querySelector("button#find-devices").textContent = "IŠČI NAPRAVO";
             }
@@ -345,6 +355,11 @@
             showOutput = !showOutput;
         }
 
+        function setNotConnected() {
+          washingType = document.getElementById("washing-type");
+          washingType.textContent = "Ni povezave";
+          washingType.style.color = "red";
+        }
         
     </script>
     <style>
