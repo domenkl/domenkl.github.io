@@ -1,4 +1,4 @@
-<!doctype html>
+[<!doctype html>
 <html>
 
 <head>
@@ -85,6 +85,7 @@
   <div class="d-flex justify-content-center" style="display:none!important;">poglej <br> <a
       href="https://googlechrome.github.io/samples/web-bluetooth/read-characteristic-value-changed.html">https://googlechrome.github.io/samples/web-bluetooth/read-characteristic-value-changed.html</a>
   </div>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API/Using_the_Notifications_API">https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API/Using_the_Notifications_API</a>
 </body>
 <style>
   h2,
@@ -219,6 +220,33 @@
   }
 </style>
 <script type="text/javascript">
+  var ChromeSamples = {
+    log: function () {
+      var line = Array.prototype.slice.call(arguments).map(function (argument) {
+        return typeof argument === 'string' ? argument : JSON.stringify(argument);
+      }).join(' ');
+
+      document.querySelector('#log').textContent += line + '\n';
+    },
+
+    clearLog: function () {
+      document.querySelector('#log').textContent = '';
+    },
+
+    setStatus: function (status) {
+      document.querySelector('#status').textContent = status;
+    },
+
+    setContent: function (newContent) {
+      var content = document.querySelector('#content');
+      while (content.hasChildNodes()) {
+        content.removeChild(content.lastChild);
+      }
+      content.appendChild(newContent);
+    }
+
+  };
+
   Notification.requestPermission(status => console.log('Notification permission status: ', status)
   )
   function displayNotification(status) {
@@ -255,33 +283,7 @@
   }
   let connected = false;
   let bluetoothDevice;
-  let batteryLevelCharacteristic;
-  var ChromeSamples = {
-    log: function () {
-      var line = Array.prototype.slice.call(arguments).map(function (argument) {
-        return typeof argument === 'string' ? argument : JSON.stringify(argument);
-      }).join(' ');
-
-      document.querySelector('#log').textContent += line + '\n';
-    },
-
-    clearLog: function () {
-      document.querySelector('#log').textContent = '';
-    },
-
-    setStatus: function (status) {
-      document.querySelector('#status').textContent = status;
-    },
-
-    setContent: function (newContent) {
-      var content = document.querySelector('#content');
-      while (content.hasChildNodes()) {
-        content.removeChild(content.lastChild);
-      }
-      content.appendChild(newContent);
-    }
-
-  };
+  let washingCharacteristic;
   let lastValue;
   // 115 - spin, 105 - idle, 117 - undefined, 119 - wash
   function onPralnicaValueChanged(event) {
@@ -326,19 +328,19 @@
           return service.getCharacteristic('4789208a-ae92-11ec-b909-0242ac120002');
         })
         .then(characteristic => {
-          batteryLevelCharacteristic = characteristic;
-          batteryLevelCharacteristic.addEventListener('characteristicvaluechanged', onPralnicaValueChanged);
+          washingCharacteristic = characteristic;
+          washingCharacteristic.addEventListener('characteristicvaluechanged', onPralnicaValueChanged);
           log('Branje vrednosti pralnega stroja...');
         })
         .then(_ => {
-          batteryLevelCharacteristic.readValue().then(value => {
+          washingCharacteristic.readValue().then(value => {
             document.getElementById("loader").style.display = "none";
             const val = value.getUint8();
             log('> Prebrana vrednost: ' + val + " : " + washingStates[val].toUpperCase());
             lastValue = val;
             setWashingState(val);
           });
-          batteryLevelCharacteristic.startNotifications();
+          washingCharacteristic.startNotifications();
           connected = true;
           document.querySelector("button#find-devices").textContent = "ODSTRANI NAPRAVO";
         })
@@ -348,10 +350,10 @@
         });
     }
     else {
-      if (batteryLevelCharacteristic) {
-        batteryLevelCharacteristic.removeEventListener('characteristicvaluechanged',
+      if (washingCharacteristic) {
+        washingCharacteristic.removeEventListener('characteristicvaluechanged',
           onPralnicaValueChanged);
-        batteryLevelCharacteristic = null;
+        washingCharacteristic = null;
       }
       bluetoothDevice.gatt.disconnect();
       bluetoothDevice = null;
@@ -630,4 +632,4 @@
   }
 </style>
 
-</html>
+</html>]
