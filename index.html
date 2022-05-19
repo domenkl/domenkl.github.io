@@ -1,4 +1,4 @@
-[<!doctype html>
+<!doctype html>
 <html>
 
 <head>
@@ -247,11 +247,12 @@
 
   };
 
-  Notification.requestPermission(status => console.log('Notification permission status: ', status)
-  )
+  Notification.requestPermission(status => console.log('Notification permission status: ', status))
+
   function displayNotification(status) {
     if (Notification.permission == 'granted') {
-      navigator.serviceWorker.getRegistration().then(function (reg) {
+      /*navigator.serviceWorker.getRegistration().then(function (reg) {*/
+      navigator.serviceWorker.ready.then( reg => {
         var options = {
           body: status,
           vibrate: [100, 50, 100],
@@ -277,7 +278,7 @@
     if (prevWash !== "None") {
       document.querySelector(".circle_out").classList.remove(prevWash);
       document.querySelector(".circle_out").classList.add(state);
-      displayNotification(state)
+      displayNotification(state);
     }
     prevWash = state;
   }
@@ -358,6 +359,7 @@
       bluetoothDevice.gatt.disconnect();
       bluetoothDevice = null;
       connected = false;
+      document.querySelector(".circle_out").classList.remove(prevWash);
       setWashingText("Ni povezave", "red");
       log('> Bluetooth naprava je resetirana.');
       document.querySelector("button#find-devices").textContent = "IŠČI NAPRAVO";
