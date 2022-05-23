@@ -251,7 +251,6 @@
 
   function displayNotification(status) {
     if (Notification.permission == 'granted') {
-      /*navigator.serviceWorker.getRegistration().then(function (reg) {*/
       navigator.serviceWorker.ready.then( reg => {
         var options = {
           body: status,
@@ -261,7 +260,7 @@
             primaryKey: 1
           }
         };
-        reg.showNotification('iOpran', options);
+        reg.showNotification('iOPRAN', options);
       });
     }
   }
@@ -286,7 +285,7 @@
   let bluetoothDevice;
   let washingCharacteristic;
   let lastValue;
-  // 115 - spin, 105 - idle, 117 - undefined, 119 - wash
+  
   function onPralnicaValueChanged(event) {
     const value = event.target.value.getUint8(0);
     // Ignore undefined
